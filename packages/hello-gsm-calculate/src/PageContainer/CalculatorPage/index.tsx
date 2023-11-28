@@ -71,7 +71,9 @@ const CalculatorPage: NextPage = () => {
     );
     // 교과성적 소계
 
-    const artSportsScore: number = ArtSport(artSportsValue); // 예체능
+    const artSportsScore: number = isNaN(ArtSport(artSportsValue))
+      ? 36
+      : ArtSport(artSportsValue); // 예체능
     const curriculumScoreSubtotal: number = Rounds(
       generalCurriculumScoreSubtotal + artSportsScore,
       4,
@@ -102,7 +104,7 @@ const CalculatorPage: NextPage = () => {
   };
 
   const inValid = (errors: FieldErrors) => {
-    console.log(errors);
+    console.error(errors);
   };
 
   // 추가과목 삭제
@@ -432,7 +434,7 @@ const CalculatorPage: NextPage = () => {
                 <tbody>
                   <tr>
                     <S.Grade rowSpan={2}>학년</S.Grade>
-                    <S.Attendance colSpan={4}>출결상황</S.Attendance>
+                    <S.Attendance colSpan={4}>미인정 출결 현황</S.Attendance>
                     <S.Attendance rowSpan={2}>봉사활동(시간)</S.Attendance>
                   </tr>
                   <tr>

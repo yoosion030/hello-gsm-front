@@ -1,28 +1,22 @@
 import type { NextPage } from 'next';
-import { Header, InformationDescription } from 'components';
+import { InformationDescription } from 'components';
 import * as S from './style';
 import { css } from '@emotion/react';
-import useStore from 'Stores/StoreContainer';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/router';
 
 const InformationPage: NextPage = () => {
-  const { setLogged } = useStore();
   const [progressIndex, setProgressIndex] = useState<number>(0);
   const { push } = useRouter();
 
   const progressArray = [
     '유의 사항',
     '원서 및 성적 작성',
-    '원서 학교 제출',
+    '입학 원서 제출',
     '1차 전형',
     '2차 전형',
     '결과 발표',
   ];
-
-  useEffect(() => {
-    setLogged(true);
-  }, []);
 
   const previusIndex = () => {
     setProgressIndex(index => (index > 0 ? --index : index));
@@ -52,7 +46,6 @@ const InformationPage: NextPage = () => {
 
   return (
     <S.InformationPage>
-      <Header />
       <S.InformationContent>
         <S.InformationHeader>
           <S.Title>입학 절차</S.Title>

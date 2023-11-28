@@ -2,41 +2,38 @@ import { css } from '@emotion/react';
 import auth from 'Api/auth';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
-import React from 'react';
+import React, { useState } from 'react';
 import useStore from 'Stores/StoreContainer';
 import * as S from './style';
 import * as I from 'Assets/svg';
 import { SideBar } from 'components';
+import { toast } from 'react-toastify';
+import { isFinalEnd } from 'shared/Date/afterApply';
 
 const Header: React.FC = () => {
-  const { pathname, replace } = useRouter();
+  const { pathname } = useRouter();
+  const [isLogoutClicked, setIsLogoutClicked] = useState<boolean>(false);
+  const [isFinalPeriod, setIsFinalPeriod] = useState<boolean>(isFinalEnd);
 
-  const { logged, setLogged, setShowSideBar } = useStore();
+  const { logged, setShowSideBar } = useStore();
+
+  const handleLogoutClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    if (isLogoutClicked) {
+      toast.error('로그아웃 중입니다. 잠시만 기다려주세요.');
+      return e.preventDefault();
+    }
+
+    return setIsLogoutClicked(true);
+  };
 
   const select = (navPath: string) =>
-    navPath === pathname && { color: '#ffffff' };
-
-  const logout = async () => {
-    try {
-      await auth.logout();
-      setLogged(false);
-      location.reload();
-    } catch (error: any) {
-      // accessToken 없을 시에 accessToken 발급 후 logout 요청
-      if (error.response.status === 401) {
-        try {
-          // accessToken 발급
-          await auth.refresh();
-          logout();
-        } catch (error) {
-          console.log(error);
-          location.reload();
-        }
-      } else {
-        console.log(error);
+    navPath === pathname &&
+    css`
+      font-weight: 700;
+      &::after {
+        content: '';
       }
-    }
-  };
+    `;
 
   return (
     <>
@@ -58,26 +55,27 @@ const Header: React.FC = () => {
             <S.NavContent css={select('/about')}>팀소개</S.NavContent>
           </Link>
         </S.NavBar>
-        {!logged ? (
-          <S.MemberBox
-            css={css`
-              justify-content: center;
-            `}
-          >
-            <Link href="/auth/signin" passHref>
-              <S.MemberContent css={select('/auth/signin')}>
-                로그인
-              </S.MemberContent>
-            </Link>
-          </S.MemberBox>
-        ) : (
-          <S.MemberBox>
-            <Link href="/mypage" passHref>
-              <S.MemberContent css={select('/mypage')}>내 정보</S.MemberContent>
-            </Link>
-            <S.Logout onClick={logout}>로그아웃</S.Logout>
-          </S.MemberBox>
-        )}
+        {!isFinalPeriod &&
+          (!logged ? (
+            <S.MemberBox
+              css={css`
+                justify-content: flex-end;
+              `}
+            >
+              <Link href="/auth/signin" passHref>
+                <S.AuthButton>로그인하기</S.AuthButton>
+              </Link>
+            </S.MemberBox>
+          ) : (
+            <S.MemberBox>
+              <Link href="/mypage" passHref>
+                <S.NavContent css={select('/mypage')}>마이페이지</S.NavContent>
+              </Link>
+              <a href={auth.logout()} onClick={handleLogoutClick}>
+                <S.AuthButton>로그아웃</S.AuthButton>
+              </a>
+            </S.MemberBox>
+          ))}
         <S.HamBurger onClick={() => setShowSideBar(true)}>
           <I.HamburgerButton />
         </S.HamBurger>

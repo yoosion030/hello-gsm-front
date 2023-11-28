@@ -7,6 +7,7 @@ export const MypageModal = styled.div`
   display: flex;
   justify-content: center;
   position: fixed;
+  top: 0;
   z-index: 5;
 `;
 
@@ -54,9 +55,9 @@ export const RedHighlighting = styled.span`
 `;
 
 export const ButtonBox = styled.div`
-  width: 310px;
   display: flex;
   justify-content: space-between;
+  gap: 10px;
 `;
 
 const Button = styled.div`

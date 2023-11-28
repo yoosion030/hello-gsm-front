@@ -1,16 +1,19 @@
 import { Global, css } from '@emotion/react';
 import { useRouter } from 'next/router';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import * as I from 'Assets/svg';
 import useStore from 'Stores/StoreContainer';
 import * as S from './style';
 import device from 'shared/config';
+import { MajorType } from 'type/application';
+import { isFirstResult } from 'shared/Date/firstScreening';
+import formatMajor from 'Utils/Format/formatMajor';
 
 interface ResultModal {
   name: string;
-  pass: boolean;
+  pass: boolean | undefined;
   isMobile: boolean;
-  majorResult?: '소프트웨어개발과' | '스마트IoT과' | '인공지능과';
+  majorResult: MajorType | null;
 }
 
 const MainResultModal: React.FC<ResultModal> = ({
@@ -19,18 +22,10 @@ const MainResultModal: React.FC<ResultModal> = ({
   isMobile,
   majorResult,
 }) => {
-  const [isFirstResultPeriod, setIsFirstResultPeriod] = useState<boolean>(true);
-  const [isPass, setIsPass] = useState<boolean>(pass);
+  const [isFirstResultPeriod, setIsFirstResultPeriod] =
+    useState<boolean>(isFirstResult);
   const { setShowMainResultModal } = useStore();
   const { push } = useRouter();
-
-  useEffect(() => {
-    setIsFirstResultPeriod(new Date() < new Date('2022/11/2 10:00:00'));
-  }, []);
-
-  useEffect(() => {
-    setIsPass(pass);
-  }, [pass]);
 
   const invisible = () => {
     setShowMainResultModal(false);
@@ -53,52 +48,97 @@ const MainResultModal: React.FC<ResultModal> = ({
         <S.MainResultModalContent>
           {isFirstResultPeriod ? (
             <S.Text>
-              {name}님의 2023학년도 {isMobile && <br />}
-              광주소프트웨어마이스터고등학교
-              <br />
-              1차 서류 심사 결과{' '}
-              {isPass ? (
-                <S.PassText>합격</S.PassText>
-              ) : (
-                <S.FailText>불합격</S.FailText>
-              )}
-              하셨습니다.
-              <br />
-              {isPass &&
-                (isMobile ? (
-                  <>
-                    2차 직무적성 소양평가는
+              {name}님의 1차 서류 심사 결과{' '}
+              {pass ? (
+                <>
+                  <S.PassText>합격</S.PassText>
+                  하셨습니다.
+                  <S.DescriptionText>
+                    &lt;2차 직무적성소양평가 안내&gt;
                     <br />
-                    10월 28일 13시에 진행됩니다.
-                  </>
-                ) : (
-                  '2차 직무적성 소양평가는 10월 28일 13시에 진행됩니다.'
-                ))}
+                    <li>
+                      일시:{' '}
+                      <span
+                        css={css`
+                          color: #3796ff;
+                        `}
+                      >
+                        2023.10.27.(금) 13시
+                      </span>
+                    </li>
+                    <li>
+                      장소:{' '}
+                      <span
+                        css={css`
+                          color: #fa4953;
+                        `}
+                      >
+                        본교 금봉관 2층 강당
+                      </span>
+                    </li>
+                    <li>
+                      준비물:{' '}
+                      <span
+                        css={css`
+                          color: #fa4953;
+                        `}
+                      >
+                        컴퓨터용 싸인펜, 필기구, 신분확인증
+                        <br />
+                        (학생증, 청소년증, 여권, 생활기록부(원본대조필) 중 하나
+                      </span>
+                    </li>
+                  </S.DescriptionText>
+                </>
+              ) : (
+                <>
+                  <S.FailText>불합격</S.FailText>
+                  하셨습니다.
+                </>
+              )}
             </S.Text>
           ) : (
             <>
               <S.Text>
-                {name}님의 2023학년도 {isMobile && <br />}
-                광주소프트웨어마이스터고등학교
+                {name}님 광주소프트웨어마이스터고등학교
                 <br />
-                {isPass ? (
+                {pass ? (
                   <>
-                    {majorResult}에 <S.PassText>최종 합격</S.PassText>
+                    <span
+                      css={css`
+                        color: #ff4e4e;
+                      `}
+                    >
+                      {formatMajor(majorResult)}
+                    </span>
+                    에 <S.PassText>최종 합격</S.PassText>
                   </>
                 ) : (
                   <S.FailText>최종 불합격</S.FailText>
                 )}
                 하셨습니다.
               </S.Text>
-              {isPass && (
+              {pass && (
                 <S.FinalPassPostScript>
-                  제출서류 : 입학등록동의서 1부(11.7.월까지),
-                  <br />
-                  건강진단서 1부(11.14.월까지)우편과 방문접수에 한함.
+                  <span
+                    css={css`
+                      font-weight: 700;
+                    `}
+                  >
+                    &lt;합격자 제출서류&gt; <br />
+                  </span>
+                  <li>
+                    입학등록동의서 1부: 11.6.(월) 까지 <br />
+                  </li>
+                  <li>
+                    건강진단서 1부: 11.13.(월)까지 <br />
+                  </li>
+                  <li>우편과 방문 제출: 1층 교무실</li>
                 </S.FinalPassPostScript>
               )}
             </>
           )}
+
           <S.PostScript>
             메인 페이지 하단에 결과 발표에서 {isMobile && <br />}
             다시 확인하실 수 있습니다.
@@ -110,7 +150,7 @@ const MainResultModal: React.FC<ResultModal> = ({
           </S.InvisibleButton>
         </S.InvisibleButtonWrap>
         {isFirstResultPeriod ? (
-          isPass ? (
+          pass ? (
             <S.ButtonWrap>
               <S.Button
                 css={css`
@@ -137,7 +177,7 @@ const MainResultModal: React.FC<ResultModal> = ({
               확인
             </S.Button>
           )
-        ) : isPass ? (
+        ) : pass ? (
           <S.ButtonWrap>
             <S.Button
               css={css`
@@ -150,7 +190,7 @@ const MainResultModal: React.FC<ResultModal> = ({
                   }
                 }
               `}
-              onClick={() => push('/최종합격자_제출_서류.hwp')}
+              onClick={() => push('/최종합격자_제출_서류.hwpx')}
             >
               <I.DownloadIcon />
               <S.ButtonText>제출서류</S.ButtonText>
